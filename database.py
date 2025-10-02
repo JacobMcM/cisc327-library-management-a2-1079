@@ -139,7 +139,7 @@ def get_book_by_isbn(isbn: str) -> Optional[Dict]:
     conn.close()
     return dict(book) if book else None
 
-def get_patron_borrowed_book(patron_id: str, book_id: str) -> List[Dict]:
+def get_patron_borrowed_book(patron_id: str, book_id: int) -> List[Dict]:
     """Get currently borrowed books for a patron."""
     conn = get_db_connection()
     records = conn.execute('''
@@ -153,6 +153,7 @@ def get_patron_borrowed_book(patron_id: str, book_id: str) -> List[Dict]:
     for record in records:
         access_time = datetime.now()
         borrowed_books.append({
+            'borrow_id': record['id'],
             'access_time': access_time,
             'due_date': datetime.fromisoformat(record['due_date']),
             'is_overdue': access_time > datetime.fromisoformat(record['due_date'])

@@ -105,10 +105,26 @@ def borrow_book_by_patron(patron_id: str, book_id: int) -> Tuple[bool, str]:
 def return_book_by_patron(patron_id: str, book_id: int) -> Tuple[bool, str]:
     """
     Process book return by a patron.
-    
-    TODO: Implement R4 as per requirements
     """
-    return False, "Book return functionality is not yet implemented."
+    book = get_book_by_id(book_id)
+
+    if not book:
+        return False, "Entered book does not exist"
+
+    borrow_records = get_patron_borrowed_book(patron_id, book_id)
+
+    if len(borrow_records) < 1:
+        return False, "Patron is not currently borrowing this book"
+
+    late_fee = calculate_late_fee_for_book(patron_id, book_id)
+
+    if not update_book_availability(book_id, 1):
+        return False, "Failed to update book availability"
+
+    if not update_borrow_record_return_date(patron_id, book_id, datetime.now()):
+        return False, "Failed to update book availability"
+
+    return True, "Book successfully returned"
 
 
 def calculate_late_fee_for_book(patron_id: str, book_id: int) -> Dict:
@@ -164,6 +180,8 @@ def search_books_in_catalog(search_term: str, search_type: str) -> List[Dict]:
     
     TODO: Implement R6 as per requirements
     """
+
+
     
     return []
 

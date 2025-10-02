@@ -4,6 +4,9 @@ from library_service import (
     get_book_by_isbn,
     return_book_by_patron
 )
+from database import (
+    reset_database
+)
 
 # these tests require the database to be cleared before each test, and then populated with standard starting data, to avoid collisions
 # they will be written with this assumption in mind, and therefore may contain unintentional collision errors if run more then once
@@ -16,6 +19,7 @@ patron_id = "456456"
 def setup():
     # all tests assume that only the starting sample data (The great gatsby, To Kill a Mockingbird, 1984) is in the
     # database, and it has not been modified
+    reset_database()
 
     # this function produces a setup where patron 456456 has borrowed a copy of the great gatsby
     # it also mirrors a test in R3_test
@@ -29,7 +33,7 @@ def setup():
     assert book
     assert book_availability > 0
 
-    success, message = borrow_book_by_patron("123456", book_id)
+    success, message = borrow_book_by_patron(patron_id, book_id)
 
     # assert book is successfully borrowed
     assert success == True
@@ -58,7 +62,7 @@ def test_return_book_success():
     assert success == True
     assert "successfully returned" in message.lower()
 
-    book = get_book_by_isbn("1234567890123")
+    book = get_book_by_isbn("9780743273565")
     book_availability_after = book['available_copies']
 
     # assert borrow successfully reduced availability by one
@@ -79,7 +83,7 @@ def test_wrong_patron_for_borrowed_book():
 
     # assert book is unsuccessfully returned
     assert success == False
-    assert "not borrowed" in message.lower()
+    assert "not currently borrowing" in message.lower()
 
 def test_wrong_return_from_patron():
     # this test assumes that only the starting sample data (The great gatsby, To Kill a Mockingbird, 1984) is in the
@@ -96,7 +100,7 @@ def test_wrong_return_from_patron():
 
     # assert book is unsuccessfully returned
     assert success == False
-    assert "not borrowed" in message.lower()
+    assert "not currently borrowing" in message.lower()
 
 def test_book_id_is_invalid():
     # this test assumes that only the starting sample data (The great gatsby, To Kill a Mockingbird, 1984) is in the
@@ -118,4 +122,4 @@ def test_book_id_is_invalid():
 
     # assert book is successfully returned
     assert success == False
-    assert "invalid id" in message.lower()
+    assert "does not exist" in message.lower()
