@@ -10,16 +10,19 @@ from typing import Dict, List, Optional, Tuple
 # Database configuration
 DATABASE = 'library.db'
 
+
 def get_db_connection():
     """Get a database connection."""
+    global DATABASE
     conn = sqlite3.connect(DATABASE)
     conn.row_factory = sqlite3.Row  # This enables column access by name
     return conn
 
+
 def init_database():
     """Initialize the database with required tables."""
     conn = get_db_connection()
-    
+
     # Create books table
     conn.execute('''
         CREATE TABLE IF NOT EXISTS books (
@@ -31,7 +34,7 @@ def init_database():
             available_copies INTEGER NOT NULL
         )
     ''')
-    
+
     # Create borrow_records table
     conn.execute('''
         CREATE TABLE IF NOT EXISTS borrow_records (
@@ -44,15 +47,43 @@ def init_database():
             FOREIGN KEY (book_id) REFERENCES books (id)
         )
     ''')
-    
+
     conn.commit()
     conn.close()
+
+
+def clear_database():
+    """remove all entries from DB, for testing"""
+    conn = get_db_connection()
+
+    # Delete books table
+    conn.execute('''
+            DELETE FROM books
+        ''')
+
+    # Delete borrow_records table
+    conn.execute('''
+            DELETE FROM borrow_records
+        ''')
+
+    conn.commit()
+    conn.close()
+
+
+def reset_database():
+    """Resets database to sample state, for testing"""
+    init_database()  # ensure database exists
+
+    clear_database()  # remove all entries
+
+    add_sample_data()  # add sample data
+
 
 def add_sample_data():
     """Add sample data to the database if it's empty."""
     conn = get_db_connection()
     book_count = conn.execute('SELECT COUNT(*) as count FROM books').fetchone()['count']
-    
+
     if book_count == 0:
         # Add sample books
         sample_books = [
@@ -60,27 +91,28 @@ def add_sample_data():
             ('To Kill a Mockingbird', 'Harper Lee', '9780061120084', 2),
             ('1984', 'George Orwell', '9780451524935', 1)
         ]
-        
+
         for title, author, isbn, copies in sample_books:
             conn.execute('''
                 INSERT INTO books (title, author, isbn, total_copies, available_copies)
                 VALUES (?, ?, ?, ?, ?)
             ''', (title, author, isbn, copies, copies))
-        
+
         # Make 1984 unavailable by adding a borrow record
         conn.execute('''
             INSERT INTO borrow_records (patron_id, book_id, borrow_date, due_date)
             VALUES (?, ?, ?, ?)
-        ''', ('123456', 3, 
+        ''', ('123456', 3,
               (datetime.now() - timedelta(days=5)).isoformat(),
               (datetime.now() + timedelta(days=9)).isoformat()))
-        
+
         # Update available copies for 1984
         conn.execute('UPDATE books SET available_copies = 0 WHERE id = 3')
-        
+
         conn.commit()
-    
+
     conn.close()
+
 
 # Helper Functions for Database Operations
 
@@ -91,6 +123,7 @@ def get_all_books() -> List[Dict]:
     conn.close()
     return [dict(book) for book in books]
 
+
 def get_book_by_id(book_id: int) -> Optional[Dict]:
     """Get a specific book by ID."""
     conn = get_db_connection()
@@ -98,12 +131,34 @@ def get_book_by_id(book_id: int) -> Optional[Dict]:
     conn.close()
     return dict(book) if book else None
 
+
 def get_book_by_isbn(isbn: str) -> Optional[Dict]:
     """Get a specific book by ISBN."""
     conn = get_db_connection()
     book = conn.execute('SELECT * FROM books WHERE isbn = ?', (isbn,)).fetchone()
     conn.close()
     return dict(book) if book else None
+
+def get_patron_borrowed_book(patron_id: str, book_id: str) -> List[Dict]:
+    """Get currently borrowed books for a patron."""
+    conn = get_db_connection()
+    records = conn.execute('''
+        SELECT * FROM borrow_records
+        WHERE patron_id = ? AND book_id = ? AND return_date IS NULL
+        ORDER BY borrow_date
+    ''', (patron_id, book_id)).fetchall()
+    conn.close()
+
+    borrowed_books = []
+    for record in records:
+        access_time = datetime.now()
+        borrowed_books.append({
+            'access_time': access_time,
+            'due_date': datetime.fromisoformat(record['due_date']),
+            'is_overdue': access_time > datetime.fromisoformat(record['due_date'])
+        })
+
+    return borrowed_books
 
 def get_patron_borrowed_books(patron_id: str) -> List[Dict]:
     """Get currently borrowed books for a patron."""
@@ -116,7 +171,7 @@ def get_patron_borrowed_books(patron_id: str) -> List[Dict]:
         ORDER BY br.borrow_date
     ''', (patron_id,)).fetchall()
     conn.close()
-    
+
     borrowed_books = []
     for record in records:
         borrowed_books.append({
@@ -127,8 +182,9 @@ def get_patron_borrowed_books(patron_id: str) -> List[Dict]:
             'due_date': datetime.fromisoformat(record['due_date']),
             'is_overdue': datetime.now() > datetime.fromisoformat(record['due_date'])
         })
-    
+
     return borrowed_books
+
 
 def get_patron_borrow_count(patron_id: str) -> int:
     """Get the number of books currently borrowed by a patron."""
@@ -139,6 +195,7 @@ def get_patron_borrow_count(patron_id: str) -> int:
     ''', (patron_id,)).fetchone()['count']
     conn.close()
     return count
+
 
 def insert_book(title: str, author: str, isbn: str, total_copies: int, available_copies: int) -> bool:
     """Insert a new book into the database."""
@@ -155,6 +212,7 @@ def insert_book(title: str, author: str, isbn: str, total_copies: int, available
         conn.close()
         return False
 
+
 def insert_borrow_record(patron_id: str, book_id: int, borrow_date: datetime, due_date: datetime) -> bool:
     """Insert a new borrow record into the database."""
     conn = get_db_connection()
@@ -170,6 +228,7 @@ def insert_borrow_record(patron_id: str, book_id: int, borrow_date: datetime, du
         conn.close()
         return False
 
+
 def update_book_availability(book_id: int, change: int) -> bool:
     """Update the available copies of a book by a given amount (+1 for return, -1 for borrow)."""
     conn = get_db_connection()
@@ -183,6 +242,7 @@ def update_book_availability(book_id: int, change: int) -> bool:
     except Exception as e:
         conn.close()
         return False
+
 
 def update_borrow_record_return_date(patron_id: str, book_id: int, return_date: datetime) -> bool:
     """Update the return date for a borrow record."""

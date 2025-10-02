@@ -8,8 +8,9 @@ from typing import Dict, List, Optional, Tuple
 from database import (
     get_book_by_id, get_book_by_isbn, get_patron_borrow_count,
     insert_book, insert_borrow_record, update_book_availability,
-    update_borrow_record_return_date, get_all_books
+    update_borrow_record_return_date, get_all_books, get_patron_borrowed_book
 )
+import math
 
 def add_book_to_catalog(title: str, author: str, isbn: str, total_copies: int) -> Tuple[bool, str]:
     """
@@ -109,19 +110,53 @@ def return_book_by_patron(patron_id: str, book_id: int) -> Tuple[bool, str]:
     """
     return False, "Book return functionality is not yet implemented."
 
+
 def calculate_late_fee_for_book(patron_id: str, book_id: int) -> Dict:
-    """
-    Calculate late fees for a specific book.
+    """calculate late fee for latest book for patron"""
+
+    books = get_patron_borrowed_book(patron_id, book_id)
+
+    if len(books) < 1:
+        return {  # return the calculated values
+            'fee_amount': 0.00,
+            'days_overdue': -1,
+            'status': 'This patron has not borrowed this book'
+        }
+
+    borrowed_book = books[0]
+    is_overdue = borrowed_book['is_overdue']
+    due_date = borrowed_book['due_date']
+    access_time = borrowed_book['access_time']
+    days_overdue = (access_time.date() - due_date.date()).days
+
+    if not is_overdue or days_overdue < 1:
+        return {  # return the calculated values
+            'fee_amount': 0.00,
+            'days_overdue': 0,
+            'status': 'This borrowed book is not due yet'
+        }
+
+    if days_overdue >= 19:
+        return {  # return the calculated values
+            'fee_amount': 15.00,
+            'days_overdue': days_overdue,
+            'status': 'Overdue fee calculation successful'
+        }
+
+    fee = 0.0
+    if days_overdue > 7:
+        fee += (days_overdue - 7)
+        fee += 7 * 0.5
+    else:
+        fee += days_overdue*0.5
     
-    TODO: Implement R5 as per requirements 
-    
-    
-    return { // return the calculated values
-        'fee_amount': 0.00,
-        'days_overdue': 0,
-        'status': 'Late fee calculation not implemented'
+    return {  # return the calculated values
+        'fee_amount': fee,
+        'days_overdue': days_overdue,
+        'status': 'Overdue fee calculation successful'
     }
-    """
+
+
 
 def search_books_in_catalog(search_term: str, search_type: str) -> List[Dict]:
     """

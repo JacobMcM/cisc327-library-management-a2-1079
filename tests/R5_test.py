@@ -6,19 +6,22 @@ from library_service import (
 from database import (
     get_patron_borrowed_books,
     insert_borrow_record,
-    update_book_availability
+    update_book_availability,
+    init_database,
+    reset_database
 )
 
 from datetime import datetime, timedelta
 
 
 # Given that there is no implementation for the late fee calculation, and the requirements have no conception
-# about what happens when a book is borrowed more then once, I will assert that calculation if done by pairing the
+# about what happens when a book is borrowed more than once, I will assert that calculation if done by pairing the
 # earliest time a book was borrowed for the purposes of calculation
 
 def test_successful_late_fee_calculation():
     # this test assumes that only the starting sample data (The great gatsby, To Kill a Mockingbird, 1984) is in the
     # database, and it has not been modified
+    reset_database()
 
     patron_id = "7878787"
 
@@ -57,12 +60,12 @@ def test_successful_late_fee_calculation():
     assert result['days_overdue'] == 3
     assert 'calculation successful' in result['status'].lower()
 
-    value, message = calculate_late_fee_for_book(patron_id, 2)
+    result = calculate_late_fee_for_book(patron_id, 2)
     assert result['fee_amount'] == 0.5*7 + 1*3
     assert result['days_overdue'] == 10
     assert 'calculation successful' in result['status'].lower()
 
-    value, message = calculate_late_fee_for_book(patron_id, 3)
+    result = calculate_late_fee_for_book(patron_id, 3)
     assert result['fee_amount'] == 15.0
     assert result['days_overdue'] == 100
     assert 'calculation successful' in result['status'].lower()
@@ -71,6 +74,7 @@ def test_successful_late_fee_calculation():
 def test_successful_late_fee_calculation_boundaries():
     # this test assumes that only the starting sample data (The great gatsby, To Kill a Mockingbird, 1984) is in the
     # database, and it has not been modified
+    reset_database()
 
     patron_id = "7878787"
 
@@ -106,23 +110,24 @@ def test_successful_late_fee_calculation_boundaries():
     # assert fee calculations are performed correctly
     result = calculate_late_fee_for_book(patron_id, 1)
     assert result['fee_amount'] == 0.5 * 7
-    assert result['days_overdue'] == 3
+    assert result['days_overdue'] == 7
     assert 'calculation successful' in result['status'].lower()
 
-    value, message = calculate_late_fee_for_book(patron_id, 2)
+    result = calculate_late_fee_for_book(patron_id, 2)
     assert result['fee_amount'] == 0.5 * 7 + 1 * 11
-    assert result['days_overdue'] == 10
+    assert result['days_overdue'] == 18
     assert 'calculation successful' in result['status'].lower()
 
-    value, message = calculate_late_fee_for_book(patron_id, 3)
+    result = calculate_late_fee_for_book(patron_id, 3)
     assert result['fee_amount'] == 15.0
-    assert result['days_overdue'] == 100
+    assert result['days_overdue'] == 19
     assert 'calculation successful' in result['status'].lower()
 
 
 def test_fee_is_zero_if_not_overdue():
     # this test assumes that only the starting sample data (The great gatsby, To Kill a Mockingbird, 1984) is in the
     # database, and it has not been modified
+    reset_database()
 
     patron_id = "7878787"
 
@@ -161,12 +166,12 @@ def test_fee_is_zero_if_not_overdue():
     assert result['days_overdue'] == 0
     assert 'not due' in result['status'].lower()
 
-    value, message = calculate_late_fee_for_book(patron_id, 2)
+    result = calculate_late_fee_for_book(patron_id, 2)
     assert result['fee_amount'] == 0.0
     assert result['days_overdue'] == 0
     assert 'not due' in result['status'].lower()
 
-    value, message = calculate_late_fee_for_book(patron_id, 3)
+    result = calculate_late_fee_for_book(patron_id, 3)
     assert result['fee_amount'] == 0.0
     assert result['days_overdue'] == 0
     assert 'not due' in result['status'].lower()
@@ -175,6 +180,7 @@ def test_fee_is_zero_if_not_overdue():
 def test_calculate_fee_for_patron_who_has_not_borrowed():
     # this test assumes that only the starting sample data (The great gatsby, To Kill a Mockingbird, 1984) is in the
     # database, and it has not been modified. It is also assumed that borrow records are empty
+    reset_database()
 
     patron_id = "9898989"
 
@@ -182,4 +188,4 @@ def test_calculate_fee_for_patron_who_has_not_borrowed():
     result = calculate_late_fee_for_book(patron_id, 1)
     assert result['fee_amount'] == 0.0
     assert result['days_overdue'] == -1  # signal of error
-    assert 'not issued' in result['status'].lower()
+    assert 'not borrowed' in result['status'].lower()
