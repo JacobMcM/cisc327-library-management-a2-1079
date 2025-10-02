@@ -58,12 +58,12 @@ def clear_database():
 
     # Delete books table
     conn.execute('''
-            DELETE FROM books
+            DROP TABLE IF EXISTS books
         ''')
 
     # Delete borrow_records table
     conn.execute('''
-            DELETE FROM borrow_records
+            DROP TABLE IF EXISTS borrow_records
         ''')
 
     conn.commit()
@@ -72,9 +72,9 @@ def clear_database():
 
 def reset_database():
     """Resets database to sample state, for testing"""
-    init_database()  # ensure database exists
-
     clear_database()  # remove all entries
+
+    init_database()  # ensure database exists
 
     add_sample_data()  # add sample data
 
@@ -122,6 +122,37 @@ def get_all_books() -> List[Dict]:
     books = conn.execute('SELECT * FROM books ORDER BY title').fetchall()
     conn.close()
     return [dict(book) for book in books]
+
+def get_books_by_isbn(search_term: str) -> List[Dict]:
+    """Get all books from the database."""
+    conn = get_db_connection()
+    books = conn.execute('''
+        SELECT * FROM books 
+        WHERE isbn = ?
+    ''', (search_term,)).fetchall()
+    conn.close()
+    return [dict(book) for book in books]
+
+def get_books_by_author(search_term: str) -> List[Dict]:
+    """Get all books from the database."""
+    conn = get_db_connection()
+    books = conn.execute('''
+            SELECT * FROM books 
+            WHERE author LIKE ?
+        ''', ("%" + search_term + "%",)).fetchall()
+    conn.close()
+    return [dict(book) for book in books]
+
+def get_books_by_title(search_term: str) -> List[Dict]:
+    """Get all books from the database."""
+    conn = get_db_connection()
+    books = conn.execute('''
+                SELECT * FROM books 
+                WHERE title LIKE ?
+            ''', ("%" + search_term + "%",)).fetchall()
+    conn.close()
+    return [dict(book) for book in books]
+
 
 
 def get_book_by_id(book_id: int) -> Optional[Dict]:

@@ -8,7 +8,8 @@ from typing import Dict, List, Optional, Tuple
 from database import (
     get_book_by_id, get_book_by_isbn, get_patron_borrow_count,
     insert_book, insert_borrow_record, update_book_availability,
-    update_borrow_record_return_date, get_all_books, get_patron_borrowed_book
+    update_borrow_record_return_date, get_all_books, get_patron_borrowed_book,
+    get_books_by_isbn, get_books_by_author, get_books_by_title
 )
 import math
 
@@ -177,13 +178,17 @@ def calculate_late_fee_for_book(patron_id: str, book_id: int) -> Dict:
 def search_books_in_catalog(search_term: str, search_type: str) -> List[Dict]:
     """
     Search for books in the catalog.
-    
-    TODO: Implement R6 as per requirements
     """
 
-
-    
-    return []
+    match search_type:
+        case "isbn":
+            return get_books_by_isbn(search_term)
+        case "author":
+            return get_books_by_author(search_term)
+        case "title":
+            return get_books_by_title(search_term)
+        case _:
+            return []
 
 def get_patron_status_report(patron_id: str) -> Dict:
     """

@@ -4,6 +4,9 @@ from library_service import (
     add_book_to_catalog,
     get_all_books
 )
+from database import (
+    reset_database
+)
 
 # these tests require the database to be cleared before each test, and then populated with standard starting data, to avoid collisions
 # they will be written with this assumption in mind, and therefore may contain unintentional collision errors if run more then once
@@ -17,6 +20,7 @@ patron_id = "456456"
 def test_search_matches_catalog_format():
     # this test assumes that only the starting sample data (The great gatsby, To Kill a Mockingbird, 1984) is in the
     # database, and it has not been modified
+    reset_database()
 
     all_books = get_all_books()
 
@@ -35,6 +39,7 @@ def test_search_matches_catalog_format():
 def test_exact_matching_isbn():
     # this test assumes that only the starting sample data (The great gatsby, To Kill a Mockingbird, 1984) is in the
     # database, and it has not been modified
+    reset_database()
 
     result = search_books_in_catalog("9780743273565", "isbn")  # great gatsby isbn
 
@@ -54,6 +59,8 @@ def test_exact_matching_isbn():
 def test_partial_mapping_author():
     # this test assumes that only the starting sample data (The great gatsby, To Kill a Mockingbird, 1984) is in the
     # database, and it has not been modified
+    reset_database()
+
 
     success, message = add_book_to_catalog("Animal Farm", "George Orwell", "9879879879879", 5)
     # assert Animal Farm added successfully
@@ -94,8 +101,9 @@ def test_partial_mapping_author():
 def test_partial_mapping_title():
     # this test assumes that only the starting sample data (The great gatsby, To Kill a Mockingbird, 1984) is in the
     # database, and it has not been modified
+    reset_database()
 
-    success, message = add_book_to_catalog("2019", "some historian", "11223344556", 5)
+    success, message = add_book_to_catalog("2019", "some historian", "1122334455667", 5)
     # assert Animal Farm added successfully
     assert success == True
     assert "successfully added" in message.lower()
