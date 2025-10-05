@@ -2,6 +2,7 @@ import pytest
 from library_service import (
     add_book_to_catalog
 )
+from database import reset_database
 
 
 def test_add_book_valid_input():
@@ -48,23 +49,22 @@ def test_author_too_long():
 
 
 def test_isbn_non_integer():
-
     success, message = add_book_to_catalog("Test Book", "Test Author", "thirteen char", 5)
 
     # this test would fail with current implementation because there is no checks if ISBN is an integer
     assert success == False
-    assert "digits only" in message # if feature implemented correctly error msg would contain "ISBN must be composed of digits only."
+    assert "exactly 13 digits" in message # if feature implemented correctly error msg would contain "ISBN must be composed of digits only."
 
 
 def test_total_copies_non_integer():
-    success, message = add_book_to_catalog("Test Book", "Test Author", "thirteen char", "invalid")
+    success, message = add_book_to_catalog("Test Book", "Test Author", "1425364785943", "invalid")
 
     assert success == False
     assert "positive integer" in message
 
 
 def test_total_copies_is_zero():
-    success, message = add_book_to_catalog("Test Book", "Test Author", "thirteen char", 0)
+    success, message = add_book_to_catalog("Test Book", "Test Author", "1425364785943", 0)
 
     assert success == False
     assert "positive integer" in message
@@ -72,6 +72,8 @@ def test_total_copies_is_zero():
 
 def test_reject_duplicate_book():
     # this test would require a test database which is cleared before each test, to avoid collisions
+    reset_database()
+
     success, message = add_book_to_catalog("Test Book", "Test Author", "1234567890123", 5)
 
     assert success == True

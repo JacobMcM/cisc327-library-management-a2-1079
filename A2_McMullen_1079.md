@@ -9,15 +9,15 @@ sure you write your name, ID and group number at the top of the file.
 
 ## Jacob McMullen, 20341079 (no group)
 
-| Function Name | Implementation Status | Missing Features                                                                                                                                                                                                                               |
-|---------------|-----------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| R1            | Partial               | -ISBN accepts any string, not just digits                                                                                                                                                                                                      |
-| R2            | Complete              | N/A                                                                                                                                                                                                                                            |
-| R3            | Partial               | -Dedicated interface for book borrowing does not exist, has no parameters<br>-borrowing limit is 6 (not 5) books<br>-project (including requirements) have no consideration for how to process a patron borrowing the same book multiple times |
-| R4            | Complete              | -Form exists and all tests pass :)                                                                                                                                                                                                             |
-| R5            | Complete              | -API endpoint exists and all tests pass :)                                                                                                                                                                                                     |
-| R6            | Complete              | -Form exists and all tests pass :)                                                                                                                                                                                                             |
-| R7            | Not Implemented       | -Functionality not implemented in any capacity                                                                                                                                                                                                 |
+| Function Name | Implementation Status | Missing Features                           |
+|---------------|-----------------------|--------------------------------------------|
+| R1            | Complete              | -fully implemented                         |
+| R2            | Partial               | -test are non functional                   |
+| R3            | Complete              | -Using catalog as dedicated interface      |
+| R4            | Complete              | -Form exists and all tests pass :)         |
+| R5            | Complete              | -API endpoint exists and all tests pass :) |
+| R6            | Complete              | -Form exists and all tests pass :)         |
+| R7            | Partial               | -Form exists, tests to be written          |
 
 ### 3. Writing Unit Test
 - Write unit test script using python pytest framework for all the functionalities specified in `requirements_specification.md` file

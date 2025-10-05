@@ -192,6 +192,7 @@ def get_patron_borrowed_book(patron_id: str, book_id: int) -> List[Dict]:
 
     return borrowed_books
 
+
 def get_patron_borrowed_books(patron_id: str) -> List[Dict]:
     """Get currently borrowed books for a patron."""
     conn = get_db_connection()
@@ -210,13 +211,38 @@ def get_patron_borrowed_books(patron_id: str) -> List[Dict]:
             'book_id': record['book_id'],
             'title': record['title'],
             'author': record['author'],
-            'borrow_date': datetime.fromisoformat(record['borrow_date']),
-            'due_date': datetime.fromisoformat(record['due_date']),
-            'is_overdue': datetime.now() > datetime.fromisoformat(record['due_date'])
+            'borrow_date': datetime.fromisoformat(record['borrow_date']).strftime("%Y-%m-%d"),
+            'due_date': datetime.fromisoformat(record['due_date']).strftime("%Y-%m-%d"),
+            'is_overdue': datetime.now().date() > datetime.fromisoformat(record['due_date']).date()
         })
 
     return borrowed_books
 
+
+def get_borrow_records_by_patron(patron_id: str) -> List[Dict]:
+    """Get all records by patron id."""
+    conn = get_db_connection()
+    records = conn.execute('''
+            SELECT br.*, b.title, b.author 
+            FROM borrow_records br 
+            JOIN books b ON br.book_id = b.id 
+            WHERE br.patron_id = ?
+            ORDER BY br.borrow_date
+        ''', (patron_id,)).fetchall()
+    conn.close()
+
+    borrowed_books = []
+    for record in records:
+        borrowed_books.append({
+            'book_id': record['book_id'],
+            'title': record['title'],
+            'author': record['author'],
+            'borrow_date': datetime.fromisoformat(record['borrow_date']).strftime("%Y-%m-%d"),
+            'return_date': datetime.fromisoformat(record['borrow_date']).strftime("%Y-%m-%d") if record['return_date'] else "Outstanding",
+            'not_returned': not record['return_date']
+        })
+
+    return borrowed_books
 
 def get_patron_borrow_count(patron_id: str) -> int:
     """Get the number of books currently borrowed by a patron."""

@@ -166,8 +166,6 @@ def test_borrow_limit_of_5_enforced():
     assert success == False
     assert "maximum borrowing limit" in message.lower()
 
-    # Note: this test will always fail because borrow limit check is improperly implemented
-
 
 
 

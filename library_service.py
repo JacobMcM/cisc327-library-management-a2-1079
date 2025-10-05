@@ -9,7 +9,8 @@ from database import (
     get_book_by_id, get_book_by_isbn, get_patron_borrow_count,
     insert_book, insert_borrow_record, update_book_availability,
     update_borrow_record_return_date, get_all_books, get_patron_borrowed_book,
-    get_books_by_isbn, get_books_by_author, get_books_by_title
+    get_books_by_isbn, get_books_by_author, get_books_by_title,
+    get_patron_borrowed_books, get_borrow_records_by_patron
 )
 import math
 
@@ -39,8 +40,8 @@ def add_book_to_catalog(title: str, author: str, isbn: str, total_copies: int) -
     
     if len(author.strip()) > 100:
         return False, "Author must be less than 100 characters."
-    
-    if len(isbn) != 13:
+
+    if len(isbn) != 13 or not isbn.isdigit():
         return False, "ISBN must be exactly 13 digits."
     
     if not isinstance(total_copies, int) or total_copies <= 0:
@@ -85,8 +86,12 @@ def borrow_book_by_patron(patron_id: str, book_id: int) -> Tuple[bool, str]:
     # Check patron's current borrowed books count
     current_borrowed = get_patron_borrow_count(patron_id)
     
-    if current_borrowed > 5:
+    if current_borrowed >= 5:
         return False, "You have reached the maximum borrowing limit of 5 books."
+
+    borrow_record = get_patron_borrowed_book(patron_id, book_id)
+    if len(borrow_record) > 0:
+        return False, "You have already borrowed a copy of this book"
     
     # Create borrow record
     borrow_date = datetime.now()
@@ -193,7 +198,25 @@ def search_books_in_catalog(search_term: str, search_type: str) -> List[Dict]:
 def get_patron_status_report(patron_id: str) -> Dict:
     """
     Get status report for a patron.
-    
-    TODO: Implement R7 as per requirements
     """
-    return {}
+
+    # get all borrowed books, sorted by earliest due date
+    outstanding_books = get_patron_borrowed_books(patron_id)
+
+    # Calculate total late fees for each
+    late_fee = 0.0
+    num_outstanding = 0
+    for outstanding_book in outstanding_books:
+        num_outstanding += 1
+        late_fee += calculate_late_fee_for_book(patron_id, outstanding_book['book_id'])['fee_amount']
+
+    # get History of books borrowed by when borrowed
+    records = get_borrow_records_by_patron(patron_id)
+
+    return {
+        'outstanding_books': outstanding_books,
+        'num_outstanding': num_outstanding,
+        'late_fee': late_fee,
+        'records': records,
+
+    }

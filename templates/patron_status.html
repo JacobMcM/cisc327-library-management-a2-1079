@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>👤 Patron Status</h2>
+<p>Search the status of our wonderful patrons.</p>
+
+<form method="GET" action="{{ url_for('borrowing.patron_status') }}">
+    <div class="form-group">
+        <label for="patron_id">Patron ID *</label>
+        <input type="text" id="patron_id" name="patron_id" pattern="[0-9]{6}" maxlength="6" required
+               value="{{ request.form.patron_id if request.form.patron_id else '' }}">
+        <small style="color: #666;">6-digit library card number</small>
+    </div>
+
+    <div class="form-group">
+        <button type="submit" class="btn">🔍 Patron Status</button>
+        <a href="{{ url_for('catalog.catalog') }}" class="btn" style="margin-left: 10px;">Return to Catalog</a>
+    </div>
+</form>
+
+{% if patron_id %}
+    <hr style="margin: 30px 0;">
+
+    <h3>Patron Status Report for Id "{{ patron_id }}"</h3>
+
+    <h4>Outstanding Books:</h4>
+
+    {% if outstanding_books %}
+        <p>
+            Total Outstanding Books: {{ num_outstanding }}<br/>
+            Total Late Fees: {{late_fee}}
+        </p>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Title</th>
+                    <th>Author</th>
+                    <th>Borrowed on</th>
+                    <th>Due Back on</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for book in outstanding_books %}
+                <tr>
+                    <td>{{ book.book_id }}</td>
+                    <td>{{ book.title }}</td>
+                    <td>{{ book.author }}</td>
+                    <td>{{ book.borrow_date }}</td>
+                    <td>
+                        {% if book.is_overdue %}
+                            <span class="status-unavailable">{{ book.due_date }}</span>
+                        {% else %}
+                            <span class="status-available">{{ book.due_date }}</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <div style="text-align: center; padding: 20px; color: #666;">
+            <h4>No Outstanding Books</h4>
+            <p>When borrowing a book it will appear here</p>
+        </div>
+    {% endif %}
+
+    <h4>Borrow History:</h4>
+
+    {% if records %}
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Title</th>
+                    <th>Author</th>
+                    <th>Borrowed on</th>
+                    <th>Returned on</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for book in records %}
+                <tr>
+                    <td>{{ book.book_id }}</td>
+                    <td>{{ book.title }}</td>
+                    <td>{{ book.author }}</td>
+                    <td>{{ book.borrow_date }}</td>
+                    <td>
+                        {% if book.not_returned %}
+                            <span class="status-unavailable">{{ book.return_date }}</span>
+                        {% else %}
+                            <span class="status-available">{{ book.return_date }}</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <div style="text-align: center; padding: 20px; color: #666;">
+            <h4>No Borrow History</h4>
+            <p>When you borrow a book it will appear here</p>
+        </div>
+    {% endif %}
+{% endif %}
+{% endblock %}
