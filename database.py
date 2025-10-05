@@ -238,7 +238,7 @@ def get_borrow_records_by_patron(patron_id: str) -> List[Dict]:
             'title': record['title'],
             'author': record['author'],
             'borrow_date': datetime.fromisoformat(record['borrow_date']).strftime("%Y-%m-%d"),
-            'return_date': datetime.fromisoformat(record['borrow_date']).strftime("%Y-%m-%d") if record['return_date'] else "Outstanding",
+            'return_date': datetime.fromisoformat(record['return_date']).strftime("%Y-%m-%d") if record['return_date'] else "Outstanding",
             'not_returned': not record['return_date']
         })
 

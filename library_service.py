@@ -205,9 +205,7 @@ def get_patron_status_report(patron_id: str) -> Dict:
 
     # Calculate total late fees for each
     late_fee = 0.0
-    num_outstanding = 0
     for outstanding_book in outstanding_books:
-        num_outstanding += 1
         late_fee += calculate_late_fee_for_book(patron_id, outstanding_book['book_id'])['fee_amount']
 
     # get History of books borrowed by when borrowed
@@ -215,8 +213,7 @@ def get_patron_status_report(patron_id: str) -> Dict:
 
     return {
         'outstanding_books': outstanding_books,
-        'num_outstanding': num_outstanding,
+        'num_outstanding': len(outstanding_books),
         'late_fee': late_fee,
         'records': records,
-
     }
