@@ -3,8 +3,9 @@ import pytest
 from library_service import (
     add_book_to_catalog,
     borrow_book_by_patron
+
 )
-from database import reset_database
+from database import reset_database, get_book_by_isbn
 
 from app import create_app
 
@@ -62,7 +63,14 @@ def test_availability_updated():
     assert success == True
     assert "successfully added" in message.lower()
 
-    borrow_book_by_patron("654321", "1234567890123")
+    book = get_book_by_isbn("1234567890123")  # Test Book isbn
+    book_id = book['id']
+
+    success, message = borrow_book_by_patron("654321", book_id)
+
+    # assert book successfully added to database
+    assert success == True
+    assert "successfully borrowed" in message.lower()
 
     response = client.get("/catalog")
     decoded_response = response.data.decode('utf-8').replace(" ", "").replace("\n", "")
@@ -83,13 +91,16 @@ def test_book_unavailable():
     assert success == True
     assert "successfully added" in message.lower()
 
-    borrow_book_by_patron("654321", "1111111111111")
+    book = get_book_by_isbn("1111111111111")  # Test Book isbn
+    book_id = book['id']
+
+    borrow_book_by_patron("654321", book_id)
 
     response = client.get("/catalog")
     decoded_response = response.data.decode('utf-8').replace(" ", "").replace("\n", "")
 
     # availability is now "Not Available"
     test_book = "<td>TestBookw1available</td><td>TestAuthor</td><td>1111111111111</td><td><spanclass" \
-                   "=\"status-unavailable\">Not Available</span>"
+                   "=\"status-unavailable\">NotAvailable</span>"
 
     assert test_book in decoded_response

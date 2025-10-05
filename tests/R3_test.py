@@ -6,7 +6,8 @@ from library_service import (
 from database import (
     get_patron_borrowed_books,
     insert_borrow_record,
-    update_book_availability
+    update_book_availability,
+    reset_database
 )
 
 from datetime import datetime, timedelta
@@ -18,6 +19,7 @@ from datetime import datetime, timedelta
 def test_borrow_book_success():
     # this test assumes that only the starting sample data (The great gatsby, To Kill a Mockingbird, 1984) is in the
     # database, and it has not been modified
+    reset_database()
 
     book = get_book_by_isbn("9780743273565")  # great gatsby isbn
 
@@ -53,6 +55,7 @@ def test_borrow_book_success():
 def test_patron_id_is_not_integer():
     # this test assumes that only the starting sample data (The great gatsby, To Kill a Mockingbird, 1984) is in the
     # database, and it has not been modified. It also assumes the borrow_records database is empty
+    reset_database()
 
     book = get_book_by_isbn("9780743273565")  # great gatsby isbn
 
@@ -73,6 +76,7 @@ def test_patron_id_is_not_integer():
 def test_patron_id_is_not_6_digits():
     # this test assumes that only the starting sample data (The great gatsby, To Kill a Mockingbird, 1984) is in the
     # database, and it has not been modified. It also assumes the borrow_records database is empty
+    reset_database()
 
     book = get_book_by_isbn("9780743273565")  # great gatsby isbn
 
@@ -101,6 +105,7 @@ def test_patron_id_is_not_6_digits():
 def test_prevent_borrowing_book_with_no_availability():
     # this test assumes that only the starting sample data (The great gatsby, To Kill a Mockingbird, 1984) is in the
     # database, and it has not been modified. It also assumes the borrow_records database is empty
+    reset_database()
 
     book = get_book_by_isbn("9780451524935")  # 1984 isbn
 
@@ -131,16 +136,17 @@ def test_prevent_borrowing_book_with_no_availability():
 
 def test_borrow_limit_of_5_enforced():
     # this test assumes that only the starting sample data (The great gatsby, To Kill a Mockingbird, 1984) is in the
-    # database, and it has not been modified. It also assumes the borrow_records database is empty
+    # database, and it has not been modified.
+    reset_database()
 
-    patron_id = "654321"
+    patron_id = "654321" # this user has borrowed no books
 
     borrow_date = datetime.now()
     due_date = borrow_date + timedelta(days=14)
 
     # add for borrow records
     for i in range(4):
-        # this test adds ambiguous into the database for the sake of the test (id = 5 is not in the book database),
+        # this test adds ambiguous data into the database for the sake of the test (id = 5 is not in the book database),
         # and thus the database should be cleared after test
         success = insert_borrow_record(patron_id, 5, borrow_date, due_date)
         assert success == True
@@ -166,9 +172,28 @@ def test_borrow_limit_of_5_enforced():
     assert success == False
     assert "maximum borrowing limit" in message.lower()
 
+def test_prevent_borrowing_the_same_book_twice():
+    # this test assumes that only the starting sample data (The great gatsby, To Kill a Mockingbird, 1984) is in the
+    # database, and it has not been modified.
+    reset_database()
 
+    book = get_book_by_isbn("9780743273565")  # great gatsby isbn
 
+    book_id = book['id']
+    book_availability = book['available_copies']
 
+    # assert book is in database
+    assert book
+    assert book_availability > 0
 
+    success, message = borrow_book_by_patron("123456", book_id)
 
-# Add more test methods for each function and edge case. You can keep all your test in a separate folder named `tests`.
+    # assert book is successfully borrowed
+    assert success == True
+    assert "successfully borrowed" in message.lower()
+
+    success, message = borrow_book_by_patron("123456", book_id)
+
+    # assert book is unsuccessfully borrowed since patron already has a copy
+    assert success == False
+    assert "already borrowed a copy" in message.lower()
