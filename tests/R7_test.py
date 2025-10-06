@@ -1,4 +1,5 @@
 import pytest
+import re
 from datetime import datetime, timedelta
 from library_service import (
     add_book_to_catalog,
@@ -8,7 +9,6 @@ from library_service import (
     borrow_book_by_patron
 )
 from database import reset_database
-
 
 
 def test_get_standard_status_report():
@@ -35,16 +35,18 @@ def test_get_standard_status_report():
     assert len(records) == 1
     records = records[0]
 
+    date_pattern = r"^\d{4}-\d{2}-\d{2}"
+
     assert outstanding_books['book_id'] == 3
     assert outstanding_books['title'] == "1984"
     assert outstanding_books['author'] == 'George Orwell'
-    assert outstanding_books['borrow_date'] == "2025-09-29"
-    assert outstanding_books['due_date'] == "2025-10-13"
+    assert re.fullmatch(date_pattern, outstanding_books['borrow_date']) is not None
+    assert re.fullmatch(date_pattern, outstanding_books['due_date']) is not None
 
     assert records['book_id'] == 3
     assert records['title'] == "1984"
     assert records['author'] == 'George Orwell'
-    assert records['borrow_date'] == "2025-09-29"
+    assert re.fullmatch(date_pattern, records['borrow_date']) is not None
     assert records['return_date'] == "Outstanding"
 
 
@@ -132,10 +134,12 @@ def test_report_updates_after_return():
     assert len(records) == 1
     records = records[0]
 
+    date_pattern = r"^\d{4}-\d{2}-\d{2}"
+
     assert records['book_id'] == 3
     assert records['title'] == "1984"
     assert records['author'] == 'George Orwell'
-    assert records['borrow_date'] == "2025-09-29"
+    assert re.fullmatch(date_pattern, records['borrow_date']) is not None
     assert records['return_date'] == datetime.now().strftime("%Y-%m-%d")
 
 

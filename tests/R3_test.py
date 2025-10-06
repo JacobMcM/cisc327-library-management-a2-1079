@@ -36,7 +36,7 @@ def test_borrow_book_success():
     assert success == True
     assert "successfully borrowed" in message.lower()
 
-    book = get_book_by_isbn("1234567890123")
+    book = get_book_by_isbn("9780743273565")
     book_availability_after = book['available_copies']
 
     # assert borrow successfully reduced availability by one
@@ -92,14 +92,14 @@ def test_patron_id_is_not_6_digits():
 
     # assert book is successfully borrowed
     assert success == False
-    assert "Invalid patron ID" in message.lower()
+    assert "invalid patron id" in message.lower()
 
     # borrow with an invalid id
     success, message = borrow_book_by_patron("12345", book_id)
 
     # assert book is successfully borrowed
     assert success == False
-    assert "Invalid patron ID" in message.lower()
+    assert "invalid patron id" in message.lower()
 
 
 def test_prevent_borrowing_book_with_no_availability():
@@ -114,24 +114,13 @@ def test_prevent_borrowing_book_with_no_availability():
 
     # assert book is in database
     assert book
-    assert book_availability == 1 # in starting sample data, 1984 should always start with 1 availability
-
-    # this test adds ambiguous into the database for the sake of the test (no patron has borrowed 1984),
-    # and thus the database should be cleared after test
-    update_book_availability(book_id, -1)
-
-    book = get_book_by_isbn("9780451524935")
-
-    book_availability = book['available_copies']
-
-    # assert availability has been successfully modified
-    assert book_availability == 0
+    assert book_availability == 0 # in starting sample data, 1984 should always start with 0 availability, since patron "123456" has already borrowed it
 
     success, message = borrow_book_by_patron("123123", book_id)
 
     # assert patron unsuccessfully borrows their 1984, since its availability is 0
     assert success == False
-    assert "maximum borrowing limit" in message.lower()
+    assert "not available" in message.lower()
 
 
 def test_borrow_limit_of_5_enforced():

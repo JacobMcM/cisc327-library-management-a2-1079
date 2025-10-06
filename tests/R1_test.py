@@ -7,6 +7,8 @@ from database import reset_database
 
 def test_add_book_valid_input():
     """Test adding a book with valid input."""
+    reset_database()
+
     success, message = add_book_to_catalog("Test Book", "Test Author", "1234567890123", 5)
     
     assert success == True
@@ -15,6 +17,8 @@ def test_add_book_valid_input():
 
 def test_add_book_invalid_isbn_too_short():
     """Test adding a book with ISBN too short."""
+    reset_database()
+
     success, message = add_book_to_catalog("Test Book", "Test Author", "123456789", 5)
     
     assert success == False
@@ -24,6 +28,8 @@ def test_add_book_invalid_isbn_too_short():
 # Add more test methods for each function and edge case. You can keep all your test in a separate folder named `tests`.
 
 def title_too_long():
+    reset_database()
+
     char_20 = "[ this is 20 chars ]"
 
     test_book = char_20 + char_20 + char_20 + char_20 + char_20\
@@ -37,6 +43,8 @@ def title_too_long():
 
 
 def test_author_too_long():
+    reset_database()
+
     char_20 = "[ this is 20 chars ]"
 
     test_author = char_20 + char_20 + char_20 + char_20 + char_20\
@@ -49,6 +57,8 @@ def test_author_too_long():
 
 
 def test_isbn_non_integer():
+    reset_database()
+
     success, message = add_book_to_catalog("Test Book", "Test Author", "thirteen char", 5)
 
     # this test would fail with current implementation because there is no checks if ISBN is an integer
@@ -57,6 +67,8 @@ def test_isbn_non_integer():
 
 
 def test_total_copies_non_integer():
+    reset_database()
+
     success, message = add_book_to_catalog("Test Book", "Test Author", "1425364785943", "invalid")
 
     assert success == False
@@ -64,6 +76,8 @@ def test_total_copies_non_integer():
 
 
 def test_total_copies_is_zero():
+    reset_database()
+
     success, message = add_book_to_catalog("Test Book", "Test Author", "1425364785943", 0)
 
     assert success == False
@@ -71,6 +85,8 @@ def test_total_copies_is_zero():
 
 
 def test_reject_duplicate_book():
+    reset_database()
+
     # this test would require a test database which is cleared before each test, to avoid collisions
     reset_database()
 
