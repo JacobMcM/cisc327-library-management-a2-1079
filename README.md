@@ -1,10 +1,13 @@
 # Library Management System - Flask Web Application with SQLite
 
+![Library Test](https://github.com/JacobMcM/cisc327-library-management-a2-1079/actions/workflows/test.yml/badge.svg)
+[![codecov](https://codecov.io/gh/JacobMcM/cisc327-library-management-a2-1079/graph/badge.svg?token=PS8SZXAMNH)](https://codecov.io/gh/JacobMcM/cisc327-library-management-a2-1079)
+
 ## Overview
 
-This project contains a partial implementation of a Flask-based Library Management System with SQLite database, designed for CISC 327 (Software Quality Assurance) coursework.
+This project contains a complete implementation of a Flask-based Library Management System with SQLite database, designed for CISC 327 (Software Quality Assurance) coursework.
 
-Students are provided with:
+Structure:
 
 - [`requirements_specification.md`](requirements_specification.md): Complete requirements document with 7 functional requirements (R1-R7)
 - [`app.py`](app.py): Main Flask application with application factory pattern
@@ -18,8 +21,6 @@ Students are provided with:
 - [`templates/`](templates/): HTML templates for the web interface
 - [`requirements.txt`](requirements.txt): Python dependencies
 
-## ❗ Known Issues
-The implemented functions may contain intentional bugs. Students should discover these through unit testing (to be covered in later assignments).
 
 ## Database Schema
 **Books Table:**
@@ -37,15 +38,4 @@ The implemented functions may contain intentional bugs. Students should discover
 - `borrow_date` (TEXT NOT NULL)
 - `due_date` (TEXT NOT NULL)
 - `return_date` (TEXT NULL)
-
-## Assignment Instructions
-See [`student_instructions.md`](student_instructions.md) for complete assignment details.
-
-**Resources for students:**
-
-- [Flask Documentation](https://flask.palletsprojects.com/)
-- [Test Driven Development](https://www.datacamp.com/tutorial/test-driven-development-in-python)
-- [Pytest framework](https://realpython.com/pytest-python-testing/)
-- [Python Blueprint](https://flask.palletsprojects.com/en/stable/blueprints)
-
 
