@@ -1,5 +1,5 @@
 import pytest
-from library_service import (
+from services.library_service import (
     search_books_in_catalog,
     add_book_to_catalog,
     get_all_books
