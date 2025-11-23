@@ -4,11 +4,13 @@ Handles all database operations and connections
 """
 
 import sqlite3
+import os
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Tuple
 
 # Database configuration
-DATABASE = 'library.db'
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DATABASE = os.path.join(BASE_DIR, "library.db")
 
 
 def get_db_connection():
