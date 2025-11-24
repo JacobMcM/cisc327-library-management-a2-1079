@@ -1,9 +1,9 @@
 from playwright.sync_api import Playwright, sync_playwright, Page, expect
-from database import reset_database
+import requests
 
 
 def test_add_and_borrow_book(playwright: Playwright):
-    reset_database()
+    assert requests.post("http://localhost:5000/api/tests/reset-db").ok
 
     base_url = "http://localhost:5000"
     catalog_url = base_url + "/catalog"
@@ -55,14 +55,14 @@ def test_add_and_borrow_book(playwright: Playwright):
     browser.close()
 
 def test_borrow_return_report(playwright: Playwright):
-    reset_database()
+    requests.post("http://localhost:5000/test/reset-db")
 
     base_url = "http://localhost:5000"
     catalog_url = base_url + "/catalog"
     return_url = base_url + "/return"
     patron_status_url = base_url + "/patron_status"
 
-    browser = playwright.chromium.launch(headless=False)
+    browser = playwright.chromium.launch(headless=True)
     context = browser.new_context()
     page = context.new_page()
 

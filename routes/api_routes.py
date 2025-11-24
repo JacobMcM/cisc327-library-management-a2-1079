@@ -4,8 +4,16 @@ API Routes - JSON API endpoints
 
 from flask import Blueprint, jsonify, request
 from services.library_service import calculate_late_fee_for_book, search_books_in_catalog
+from database import reset_database
 
 api_bp = Blueprint('api', __name__, url_prefix='/api')
+
+
+@api_bp.route('/tests/reset-db', methods=['POST'])
+def api_reset_database():
+    reset_database()
+    return jsonify("Finished"), 200
+
 
 @api_bp.route('/late_fee/<patron_id>/<int:book_id>')
 def get_late_fee(patron_id, book_id):
