@@ -3,6 +3,7 @@ import requests
 
 
 def test_add_and_borrow_book(playwright: Playwright):
+    # make api call to reset the database, ensure it returns ok status
     assert requests.post("http://localhost:5000/api/tests/reset-db").ok
 
     base_url = "http://localhost:5000"
@@ -55,6 +56,7 @@ def test_add_and_borrow_book(playwright: Playwright):
     browser.close()
 
 def test_borrow_return_report(playwright: Playwright):
+    # make api call to reset the database, ensure it returns ok status
     requests.post("http://localhost:5000/test/reset-db")
 
     base_url = "http://localhost:5000"
